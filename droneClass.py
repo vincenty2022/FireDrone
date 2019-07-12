@@ -3,28 +3,31 @@
 #
 # Available public functions:
 #
-#     startRun(scene_number)              starts a directrun and creates run_id
+#     startRun(scene_number)              starts a directrun on specified scene and creates run_id
 #     endRun(run_id = self.run_id)        ends run
 #     droneDisp()                         displays drone frame as frame.png
+#     manualRun()                         call after startRun(). Allows manual control and testing
 #     moveUp(repeat = 1)                  moves up with a repeat value
 #     moveDown(" ")
 #     moveLeft(" ")
 #     moveRight(" ")
 
 
-
-
-
 import firedrone.client as fdc
 from firedrone.client.errors import FireDroneClientHttpError
 import os
 from IPython.display import Image
+import readchar
+
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 class Drone:
     def __init__(self, api_key):
         self.api_key = api_key
         self.workspace = fdc.Workspace(api_key)
         self.run_id = -1        # defaults to error value
+        self.img = "./frame.png"
 
     def startRun(self, scene_num):
         try:
@@ -33,7 +36,56 @@ class Drone:
             self.run_id = run_id
         except FireDroneClientHttpError as e:
             print(e)
-            print("Run ended")
+
+    def __matplotDisp(self):
+        img=mpimg.imread(self.img)
+        imgplot = plt.imshow(img)
+        plt.pause(1)
+
+    def manualRun(self):
+        self.__check_run()
+        print("Enabling Manual Run. Use wasd to move, q to quit, e to use vision")
+        x = 0
+        y = 0
+
+        self.__matplotDisp()
+
+        while True:
+            val = readchar.readkey()
+
+            if val == 'w':                  # Up
+                self.moveUp()
+                self.droneDisp()
+                self.__matplotDisp()
+                y+=1
+
+            if val == 'a':                  # Left
+                self.moveLeft()
+                self.droneDisp()
+                self.__matplotDisp()
+                x-=1
+
+            if val == 's':                  # Down
+                self.moveDown()
+                self.droneDisp()
+                self.__matplotDisp()
+                y-=1
+
+            if val == 'd':                  # Right
+                self.moveRight()
+                self.droneDisp()
+                self.__matplotDisp()
+                x+=1
+
+
+            if val == 'e':                  # Pass to vision
+                pass #modify later
+
+            if val == 'q':                  # Quit
+                print ("Disabling Manual Run")
+                break
+
+        plt.show()
 
     def endRun(self, run_id = -1):
         # change run_id such that default is always self.run_id
@@ -89,18 +141,20 @@ class Drone:
         return move_result.get('success')
 
 # testing
-api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
+if __name__ == "__main__":
 
-test = Drone(api_key)
+    api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
 
-test.startRun(21)
-test.moveUp()
-test.moveUp(15000)
-test.moveLeft(15000)
-test.moveRight(15000)
-test.moveDown(15000)
-test.droneDisp()
-test.endRun()
+    test = Drone(api_key)
 
-# use in case of code breaks and manual override is required
-# test.endRun()
+    test.startRun(21)
+    test.moveUp()
+    test.moveUp(15000)
+    test.moveLeft(15000)
+    test.moveRight(15000)
+    test.moveDown(15000)
+    test.droneDisp()
+    test.endRun()
+
+    # use in case of code breaks and manual override is required
+    # test.endRun()
