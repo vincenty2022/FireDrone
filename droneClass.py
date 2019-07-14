@@ -12,7 +12,6 @@
 #     moveLeft(" ")
 #     moveRight(" ")
 
-
 import firedrone.client as fdc
 from firedrone.client.errors import FireDroneClientHttpError
 import os
@@ -21,13 +20,18 @@ import readchar
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import matplotlib.patches as patches
+import numpy as np
+from PIL import Image
+
+from predictor import analyze
 
 class Drone:
     def __init__(self, api_key):
         self.api_key = api_key
         self.workspace = fdc.Workspace(api_key)
         self.run_id = -1        # defaults to error value
-        self.img = "./frame.png"
+        self.image_path = "./frame.png"
 
     def startRun(self, scene_num):
         try:
@@ -37,52 +41,64 @@ class Drone:
         except FireDroneClientHttpError as e:
             print(e)
 
-    def __matplotDisp(self):
-        img=mpimg.imread(self.img)
-        imgplot = plt.imshow(img)
+    def __matplotDisp(self, ax):
+        img = np.array(Image.open(self.image_path), dtype=np.uint8)
+        ax.imshow(img)
         plt.pause(1)
 
     def manualRun(self):
         self.__check_run()
-        print("Enabling Manual Run. Use wasd to move, q to quit, e to use vision")
+        print("Enabling Manual Run. Use wasd to move, q to quit, e to analyze")
         x = 0
         y = 0
 
-        self.__matplotDisp()
+        fig, ax = plt.subplots()
+
+        self.droneDisp()
+        self.__matplotDisp(ax)
 
         while True:
+            print('Use wasd to move, q to quit, e to analyze')
+
             val = readchar.readkey()
+            # cleaning up
+            for p in reversed(ax.patches):
+                p.remove()
+
+            for t in reversed(ax.texts):
+                t.remove()
 
             if val == 'w':                  # Up
                 self.moveUp()
                 self.droneDisp()
-                self.__matplotDisp()
+                self.__matplotDisp(ax)
                 y+=1
 
             if val == 'a':                  # Left
                 self.moveLeft()
                 self.droneDisp()
-                self.__matplotDisp()
+                self.__matplotDisp(ax)
                 x-=1
 
             if val == 's':                  # Down
                 self.moveDown()
                 self.droneDisp()
-                self.__matplotDisp()
+                self.__matplotDisp(ax)
                 y-=1
 
             if val == 'd':                  # Right
                 self.moveRight()
                 self.droneDisp()
-                self.__matplotDisp()
+                self.__matplotDisp(ax)
                 x+=1
 
-
             if val == 'e':                  # Pass to vision
-                pass #modify later
+                analyzer = analyze()
+                patch = analyzer.dispPredict(ax)
 
             if val == 'q':                  # Quit
                 print ("Disabling Manual Run")
+                plt.close()
                 break
 
         plt.show()
@@ -97,13 +113,13 @@ class Drone:
     # check if a direct run has been started
     def __check_run(self):
         if self.run_id == -1:
-            raise Exception('No direct run started!')
+            raise Exception('No direct run started or previous not closed')
 
     # set frame.png to current image
     def droneDisp(self):
         self.__check_run()
         frame = self.workspace.get_drone_fov_image(self.run_id)
-        with open('./frame.png', 'wb') as f:
+        with open(self.image_path, 'wb') as f:
             f.write(frame)
 
     # motion functions. Will return true or false for success
@@ -122,7 +138,6 @@ class Drone:
             if move_result.get('success') == False:
                 break
         return move_result.get('success')
-
 
     def moveRight(self, repeat = 1):
         self.__check_run()
