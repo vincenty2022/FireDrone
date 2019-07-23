@@ -3,14 +3,14 @@
 #
 # Available public functions:
 #
-#     startRun(scene_number)              starts a directrun on specified scene and creates run_id
-#     endRun(run_id = self.run_id)        ends run
-#     droneDisp()                         displays drone frame as frame.png
-#     manualRun()                         call after startRun(). Allows manual control and testing
-#     moveUp(repeat = 1)                  moves up with a repeat value
-#     moveDown(" ")
-#     moveLeft(" ")
-#     moveRight(" ")
+#     startRun(scene_number)                        starts a directrun on specified scene and creates run_id
+#     endRun(run_id = self.run_id)                  ends run
+#     __droneDisp()                                 displays drone frame as frame.png
+#     directRun(initial_x = 0, inital_y = 0)        call after startRun(). Allows manual control and testing.
+#     __moveUp(repeat = 1)                          moves up with a repeat value
+#     __moveDown(" ")
+#     __moveLeft(" ")
+#     __moveRight(" ")
 
 import firedrone.client as fdc
 from firedrone.client.errors import FireDroneClientHttpError
@@ -32,29 +32,81 @@ class Drone:
         self.workspace = fdc.Workspace(api_key)
         self.run_id = -1        # defaults to error value
         self.image_path = "./frame.png"
+        self.scenes = self.workspace.get_scenes()
+        self.canceled = False
 
-    def startRun(self, scene_num):
-        try:
-            start_result = self.workspace.directrun_start(scene_num)
-            run_id = start_result.get('uniqueId')
-            self.run_id = run_id
-        except FireDroneClientHttpError as e:
-            print(e)
+    def __printScenes(self):
+        print(self.scenes)
+
+    def __checkScenes(self, input):
+        for dict in self.scenes:
+            val = str(dict['id'])
+            if val == input:
+                return True
+        return False
+
+    def startRun(self):
+        self.__printScenes()
+        scene_num = input('Cancel with "e". Select a scene ID: ')
+
+        print(scene_num)
+
+        if self.__checkScenes(scene_num):
+            try:
+                start_result = self.workspace.directrun_start(scene_num)
+                run_id = start_result.get('uniqueId')
+                self.run_id = run_id
+            except FireDroneClientHttpError as e:
+                print(e)
+        elif scene_num == 'e':
+            print('Cancelling')
+            self.canceled = True
+            return
+        else:
+            print('Not a valid ID!')
+            self.startRun()
 
     def __matplotDisp(self, ax):
         img = np.array(Image.open(self.image_path), dtype=np.uint8)
         ax.imshow(img)
         plt.pause(1)
 
-    def manualRun(self):
+    def directRun(self, init_x = 0, init_y = 0):
+        if self.canceled == True:
+            return
+
         self.__check_run()
         print("Enabling Manual Run. Use wasd to move, q to quit, e to analyze")
+
+        # zeroes to bottom left
+        while self.__moveLeft():
+            pass
         x = 0
         y = 0
 
-        fig, ax = plt.subplots()
+        # go to initial coords
+        while not (x == init_x and y == init_y):
+            diff_x = init_x - x
+            diff_y = init_y - y
 
-        self.droneDisp()
+            if diff_x > 0:
+                self.__moveRight()
+                x+=1
+            elif diff_x < 0:
+                self.__moveLeft()
+                x-=1
+
+            if diff_y > 0:
+                self.__moveUp()
+                y+=1
+            elif diff_x < 0:
+                self.__moveDown()
+                y-=1
+
+        # initialize display
+        fig, ax = plt.subplots()
+        coord_text = fig.text(0.9, 0.05, f'({x}, {y})', fontsize=10)
+        self.__droneDisp()
         self.__matplotDisp(ax)
 
         while True:
@@ -69,28 +121,40 @@ class Drone:
                 t.remove()
 
             if val == 'w':                  # Up
-                self.moveUp()
-                self.droneDisp()
+                # coordinates
+                if self.__moveUp():
+                    y+=1
+                coord_text.set_text(f'({x}, {y})')
+
+                self.__droneDisp()
                 self.__matplotDisp(ax)
-                y+=1
 
             if val == 'a':                  # Left
-                self.moveLeft()
-                self.droneDisp()
+                # coordinates
+                if self.__moveLeft():
+                    x-=1
+                coord_text.set_text(f'({x}, {y})')
+
+                self.__droneDisp()
                 self.__matplotDisp(ax)
-                x-=1
 
             if val == 's':                  # Down
-                self.moveDown()
-                self.droneDisp()
+                # coordinates
+                if self.__moveDown():
+                    y-=1
+                coord_text.set_text(f'({x}, {y})')
+
+                self.__droneDisp()
                 self.__matplotDisp(ax)
-                y-=1
 
             if val == 'd':                  # Right
-                self.moveRight()
-                self.droneDisp()
+                # coordinates
+                if self.__moveRight():
+                    x+=1
+                coord_text.set_text(f'({x}, {y})')
+
+                self.__droneDisp()
                 self.__matplotDisp(ax)
-                x+=1
 
             if val == 'e':                  # Pass to vision
                 analyzer = analyze()
@@ -104,6 +168,9 @@ class Drone:
         plt.show()
 
     def endRun(self, run_id = -1):
+        if self.canceled == True:
+            return
+
         # change run_id such that default is always self.run_id
         if run_id == -1:
             run_id = self.run_id
@@ -116,14 +183,14 @@ class Drone:
             raise Exception('No direct run started or previous not closed')
 
     # set frame.png to current image
-    def droneDisp(self):
+    def __droneDisp(self):
         self.__check_run()
         frame = self.workspace.get_drone_fov_image(self.run_id)
         with open(self.image_path, 'wb') as f:
             f.write(frame)
 
     # motion functions. Will return true or false for success
-    def moveUp(self, repeat = 1):
+    def __moveUp(self, repeat = 1):
         self.__check_run()
         for _ in range(repeat):
             move_result = self.workspace.directrun_move_up(self.run_id)
@@ -131,7 +198,7 @@ class Drone:
                 break
         return move_result.get('success')
 
-    def moveDown(self, repeat = 1):
+    def __moveDown(self, repeat = 1):
         self.__check_run()
         for _ in range(repeat):
             move_result = self.workspace.directrun_move_down(self.run_id)
@@ -139,7 +206,7 @@ class Drone:
                 break
         return move_result.get('success')
 
-    def moveRight(self, repeat = 1):
+    def __moveRight(self, repeat = 1):
         self.__check_run()
         for _ in range(repeat):
             move_result = self.workspace.directrun_move_right(self.run_id)
@@ -147,7 +214,7 @@ class Drone:
                 break
         return move_result.get('success')
 
-    def moveLeft(self, repeat = 1):
+    def __moveLeft(self, repeat = 1):
         self.__check_run()
         for _ in range(repeat):
             move_result = self.workspace.directrun_move_left(self.run_id)
@@ -161,15 +228,9 @@ if __name__ == "__main__":
     api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
 
     test = Drone(api_key)
-
-    test.startRun(21)
-    test.moveUp()
-    test.moveUp(15000)
-    test.moveLeft(15000)
-    test.moveRight(15000)
-    test.moveDown(15000)
-    test.droneDisp()
+    test.startRun()
+    test.directRun(3, 3)
     test.endRun()
 
-    # use in case of code breaks and manual override is required
+    # use in case of code breaks and manual override is required, use endRun(run_key)
     # test.endRun()
