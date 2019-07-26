@@ -14,7 +14,7 @@ def horiz_scan(droneInstance, direction, height):
 
             for _ in range(4):
                 success = droneInstance.moveRight()
-                if success == True:
+                if success:
                     frame_width += 100
                 else:
                     break
@@ -40,7 +40,7 @@ def horiz_scan(droneInstance, direction, height):
 
             for _ in range(4):
                 success = droneInstance.moveLeft()
-                if success == True:
+                if success:
                     frame_width += 100
                 else:
                     break
@@ -64,7 +64,6 @@ def horiz_scan(droneInstance, direction, height):
 
 def combine_imrows(row_array):
     img = row_array.pop(0)
-    print(row_array)
     for row in row_array:
         w, h1 = img.size
         _, h2 = row.size
@@ -80,7 +79,7 @@ def combine_imrows(row_array):
 def reverse_run(droneInstance):
     run.startRun()
 
-    if droneInstance.canceled == True:
+    if droneInstance.canceled:
         return
 
     # zero to bottom left corner
