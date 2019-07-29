@@ -19,14 +19,14 @@ Microsoft Azure Custom Vision Services
 - Readchar
 
 ## Description
-###### direct_run.py
+###### __direct_run.py__
 Imagined as being part of the on-board code of the virtual drone.
 
 Accepts manual input in controlling the virtual drone. Displays and updates the image on a matplotlib matplotlib. The
 drone's current field of vision can be analyzed for fires by the Azure custom vision model at any point.
 Note: run this script to run the direct_run once
 
-###### reverse_run.py
+###### __reverse_run.py__
 Imagined as being part of the on-board code of the virtual drone.
 
 Operates autonomously after a scene is selected. Scans the entire scene and stitches together the larger image. The
@@ -35,7 +35,7 @@ initial image of the scene. The coordinates of the files are loaded onto a json 
 files are then exported to Azure Storage services.
 Note: run this script to run the reverse_run once
 
-###### control_panel.py
+###### __control_panel.py__
 Imagined as being the primary code used by off-site hardware used to control the drone.
 
 Prompts the user to begin either an indefinite (until cancelled) set of reverse_runs for data collection purposes or
