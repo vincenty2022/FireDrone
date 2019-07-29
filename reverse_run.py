@@ -1,8 +1,22 @@
+from azure.storage.blob import BlockBlobService, PublicAccess
+
 from droneClass import Drone
 import io
 from PIL import Image
+import json
+import datetime as dt
+import os
 
+from predictor import analyze
+
+
+# FireDrone api_key
 api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
+
+# Azure blob storage info
+account_name = 'firedronestor'
+account_key = 'dEvAqLZ2iU3WbvjehqVb/6d44hhMf5RpJlTpXXEdEeaR6bQtIeOJ6QWxmPjosJhsXdYLw22x/HeHfZi0v1H3Aw=='
+
 
 def horiz_scan(droneInstance, direction, height):
     img = droneInstance.getFrame()
@@ -76,8 +90,54 @@ def combine_imrows(row_array):
 
     return img
 
+def output_to_cloud(image, coords, scene_num):
+    # variables for naming container
+    is_fire = not len(coords) == 0
+    year = dt.datetime.now().year
+    month = dt.datetime.now().month
+    day = dt.datetime.now().day
+    hour = dt.datetime.now().hour
+    minute = dt.datetime.now().minute
+
+    folderpath = os.getcwd()
+
+    image.save('./resources/marked.png')
+
+    # format for json export
+    data = {}
+    data['fires'] = []
+
+    for pair in coords:
+        x, y = pair
+
+        data['fires'].append({
+            'x': x,
+            'y': y
+        })
+
+    with open('coordinates.json', 'w') as f:
+        json.dump(data, f)
+
+    service = BlockBlobService(account_name, account_key)
+
+    container_name = ''
+
+    if is_fire:
+        container_name = f'fire-{scene_num}-{year}-{month}-{day}-{hour}-{minute}'
+    else:
+        container_name = f'safe-{scene_num}-{year}-{month}-{day}-{hour}-{minute}'
+
+    # export to blob storage
+    service.create_container(container_name)
+    service.set_container_acl(container_name, public_access=PublicAccess.Container)
+
+    service.create_blob_from_path(container_name, 'scene_image.png', os.path.join(folderpath, 'resources\stitched.png'))
+    service.create_blob_from_path(container_name, 'marked_scene_image.png', os.path.join(folderpath, 'resources\marked.png'))
+    service.create_blob_from_path(container_name, 'drone_coordinates.json', os.path.join(folderpath, 'resources\coordinates.json'))
+
+
 def reverse_run(droneInstance):
-    run.startRun()
+    scene_num = droneInstance.scene_num
 
     if droneInstance.canceled:
         return
@@ -88,35 +148,42 @@ def reverse_run(droneInstance):
 
     imgStor = []
 
-    imgStor.append(horiz_scan(run, 'right', 500))
+    imgStor.append(horiz_scan(droneInstance, 'right', 500))
 
-    while run.moveUp():
+    while droneInstance.moveUp():
         height = 100
         for _ in range(4):
-            success = run.moveUp()
+            success = droneInstance.moveUp()
             if success:
                 height += 100
             else:
                 break
 
-        imgStor.append(horiz_scan(run, 'left', height))
+        imgStor.append(horiz_scan(droneInstance, 'left', height))
 
-        while run.moveUp():
+        while droneInstance.moveUp():
             height2 = 100
             for _ in range(4):
-                success = run.moveUp()
+                success = droneInstance.moveUp()
                 if success:
                     height2 += 100
                 else:
                     break
 
-            imgStor.append(horiz_scan(run, 'right', height2))
+            imgStor.append(horiz_scan(droneInstance, 'right', height2))
 
     result = combine_imrows(imgStor)
-    result.save('./stitched.png')
+    result.save('./resources/stitched.png')
 
+    analyzer = analyze('./resources/stitched.png')
+    image, coordinates = analyzer.imgPredict()
+
+    output_to_cloud(image, coordinates, scene_num)
+
+# runs it
+if __name__ == "__main__":
+
+    run = Drone(api_key)
+    run.startRun()
+    reverse_run(run)
     run.endRun()
-
-run = Drone(api_key)
-reverse_run(run)
-# run.endRun('69b30efc-b660-4ee2-a726-12b5d4557c8e')

@@ -8,10 +8,11 @@ from droneClass import Drone
 from predictor import analyze
 
 api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
+image_path = './resources/frame.png'                  # file path that current fov is saved to for direct_run
 
 # displays drone images on matplotlib display
 def matplotDisp(droneInstance, ax):
-    img = np.array(Image.open(droneInstance.image_path), dtype=np.uint8)
+    img = np.array(Image.open(image_path), dtype=np.uint8)
     ax.imshow(img)
     plt.pause(1)
 
@@ -19,13 +20,11 @@ def matplotDisp(droneInstance, ax):
 def droneDisp(droneInstance):
     droneInstance.check_run()
     frame = droneInstance.getFrame()
-    with open(droneInstance.image_path, 'wb') as f:
+    with open(image_path, 'wb') as f:
         f.write(frame)
 
 # starts direct run
 def directRun(droneInstance, init_x = 0, init_y = 0):
-    droneInstance.startRun()
-
     if droneInstance.canceled == True:
         return
 
@@ -35,6 +34,9 @@ def directRun(droneInstance, init_x = 0, init_y = 0):
     # zeroes to bottom left
     while droneInstance.moveLeft():
         pass
+    while droneInstance.moveDown():
+        pass
+
     x = 0
     y = 0
 
@@ -111,18 +113,19 @@ def directRun(droneInstance, init_x = 0, init_y = 0):
             matplotDisp(droneInstance, ax)
 
         if val == 'e':                  # Pass to vision
-            analyzer = analyze()
+            analyzer = analyze('./resources/frame.png')
             patch = analyzer.dispPredict(ax)
             print('Analysis complete')
 
         if val == 'q':                  # Quit
-            print ("Disabling Manual Run")
+            print ("Disabling Direct Run")
             plt.close()
             break
     plt.show()
 
-    run.endRun()
+if __name__ == '__main__':
 
-# runs it
-run = Drone(api_key)
-directRun(run)
+    run = Drone(api_key)
+    run.startRun()
+    directRun(run)
+    run.endRun()
