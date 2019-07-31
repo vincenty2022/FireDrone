@@ -79,27 +79,50 @@ class analyze:
 
         return fireDist, smokeDist
 
-    # boxes the object and labels with tag name and probability for matplotlib
-    def __boxObject(self, obj_list, ax, im_width, im_height):
+    # boxes the object and labels with tag name and probability for matplotlib. for direct_run
+    def __boxObject(self, obj_list, droneInstance, ax, im_width, im_height):
+        scoring_array = [0] * 250000
+
         for inst in obj_list:
-            x, y = inst.bounding_box.left, inst.bounding_box.top
+            x, y = inst.bounding_box.left * im_width, inst.bounding_box.top * im_height
             label = inst.tag_name
             probability = inst.probability
 
             # scale to frame dimensions
-            pic_coord = (x* im_width, y*im_height)
+            pic_coord = (x, y)
 
             # dimensions of recognized region
             obj_width = inst.bounding_box.width*im_width
             obj_height = inst.bounding_box.height*im_height
 
-            rect = patches.Rectangle((pic_coord), obj_width, obj_height, edgecolor = 'r', fill = False)
-            text = plt.text(pic_coord[0], pic_coord[1],f'{label}: {round(probability, 3)}')
+            # display
+            rect = patches.Rectangle(pic_coord, obj_width, obj_height, edgecolor = 'r', fill = False)
+            plt.text(pic_coord[0], pic_coord[1],f'{label}: {round(probability, 3)}')
 
             ax.add_patch(rect)
 
-    # display on matplotlib. Use only with direct run
-    def dispPredict(self, ax):
+            # scoring
+            scoring_array = self.__score(scoring_array, x, y, obj_width, obj_height)
+
+        # export to FireDrone
+        droneInstance.score(scoring_array)
+
+    # changes scoring array for one instance of fire. for direct_run
+    def __score(self, scoring_array, top_left_x, top_left_y, width, height):
+        width = int(round(width))
+        height = int(round(width))
+        top_left_x = int(round(top_left_x))
+        top_left_y = int(round(top_left_y))
+        arr_index = top_left_x + top_left_y * 500
+        for _ in range(height):
+            for i in range(arr_index, arr_index+ width):
+                scoring_array[i] = 1
+            arr_index += 500
+
+        return scoring_array
+
+    # display on matplotlib. Use only with direct run. for direct_run
+    def dispPredict(self, droneInstance, ax):
         if self.__areBothEmpty():
             self.predictUpdate()
             if self.__areBothEmpty():
@@ -109,8 +132,8 @@ class analyze:
 
         img = np.array(Image.open(self.image_path), dtype = np.uint8)
 
-        self.__boxObject(self.fires, ax, im_width, im_height)
-        self.__boxObject(self.smoke, ax, im_width, im_height)
+        self.__boxObject(self.fires, droneInstance, ax, im_width, im_height)
+        self.__boxObject(self.smoke, droneInstance, ax, im_width, im_height)
 
         ax.imshow(img)
         plt.pause(1)
@@ -137,7 +160,7 @@ class analyze:
 
         return drone_x, drone_y
 
-    # boxes objects and returns a Draw PIL image and list of object center coordinates
+    # boxes objects and returns a Draw PIL image and list of object center coordinates. For reverse_run
     def __imgBox(self, obj_list, image, im_width, im_height):
         im = image.convert('RGBA')
         drawn = Draw(im)
@@ -164,6 +187,7 @@ class analyze:
 
         return im, coords
 
+    # for reverse_run
     def imgPredict(self):
         if self.__areBothEmpty():
             self.predictUpdate()

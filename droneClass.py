@@ -81,8 +81,14 @@ class Drone:
             else:
                 print('Not a valid input')
 
+    def score(self, pixel_array):
+        if self.canceled:
+            return
+
+        self.workspace.directrun_score_pixels(self.run_id, pixel_array)
+
     def endRun(self, run_id = -1):
-        if self.canceled == True:
+        if self.canceled:
             return
 
         # change run_id such that default is always self.run_id
@@ -120,6 +126,14 @@ class Drone:
         self.check_run()
         move_result = self.workspace.directrun_move_left(self.run_id)
         return move_result.get('success')
+
+    def get_all_history(self):
+        run_history = self.workspace.directrun_get_history()
+        return run_history
+
+    def get_history_entry(self, id):
+        run_history_entry = self.workspace.directrun_get_history_entry(id)
+        return run_history_entry
 
 # testing
 if __name__ == '__main__':
