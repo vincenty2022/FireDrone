@@ -10,13 +10,13 @@ import numpy as np
 ##################### AZURE MODEL SPECIFIC VARIABLES ###########################
 prediction_key = '9ef10c8af98c4b6eabba85f7a31a718d'
 project_id = 'a3ee9e07-9016-443c-a300-a8bb7f3a0dba'
-publishedName = 'Fire and Buildings'
-ENDPOINT = 'https://westus2.api.cognitive.microsoft.com/customvision/v3.0/Prediction/'
+publishedName = 'BuildingsOnFire01'
+ENDPOINT = 'https://westus2.api.cognitive.microsoft.com/'
 fire_classifier = 'fire'            # Name of classifier in Custom Vision
 smoke_classifier = 'smoke'          # Name of classifier in Custom Vision
 
 # CALIBRATE FOR USE
-fireThreshold = 0.30
+fireThreshold = 0.01
 smokeThreshold = 0.15
 ################################################################################
 
@@ -110,7 +110,7 @@ class analyze:
     # changes scoring array for one instance of fire. for direct_run
     def __score(self, scoring_array, top_left_x, top_left_y, width, height):
         width = int(round(width))
-        height = int(round(width))
+        height = int(round(height))
         top_left_x = int(round(top_left_x))
         top_left_y = int(round(top_left_y))
         arr_index = top_left_x + top_left_y * 500
