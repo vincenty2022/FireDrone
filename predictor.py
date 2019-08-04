@@ -8,16 +8,16 @@ import math
 import numpy as np
 
 ##################### AZURE MODEL SPECIFIC VARIABLES ###########################
-prediction_key = '09e3db73317249f78fbbb5ac10261ce8'
-project_id = '8d0b1bca-87e6-4d23-a346-03ac599454c6'
-publishedName = 'It'
-ENDPOINT = 'https://eastus.api.cognitive.microsoft.com'
-fire_classifier = 'Fire'            # Name of classifier in Custom Vision
+prediction_key = '9ef10c8af98c4b6eabba85f7a31a718d'
+project_id = 'a3ee9e07-9016-443c-a300-a8bb7f3a0dba'
+publishedName = 'Fire and Buildings'
+ENDPOINT = 'https://westus2.api.cognitive.microsoft.com/customvision/v3.0/Prediction/'
+fire_classifier = 'fire'            # Name of classifier in Custom Vision
 smoke_classifier = 'smoke'          # Name of classifier in Custom Vision
 
 # CALIBRATE FOR USE
-fireThreshold = 0.10
-smokeThreshold = 0.00
+fireThreshold = 0.30
+smokeThreshold = 0.15
 ################################################################################
 
 class analyze:
@@ -200,6 +200,3 @@ class analyze:
         draw, coordList = self.__imgBox(self.fires, img, im_width, im_height)
 
         return draw, coordList
-
-
-
