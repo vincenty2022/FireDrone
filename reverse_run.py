@@ -122,7 +122,7 @@ def output_to_cloud(image, coords, scene_num):
             'y': y
         })
 
-    with open('coordinates.json', 'w') as f:
+    with open('./resources/coordinates.json', 'w') as f:
         json.dump(data, f)
 
     service = BlockBlobService(account_name, account_key)
