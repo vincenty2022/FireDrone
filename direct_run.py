@@ -1,3 +1,7 @@
+################################################################################
+# Descrption: Runs a direct run
+################################################################################
+
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
@@ -118,10 +122,9 @@ def directRun(droneInstance, init_x = 0, init_y = 0):
             print('Analysis complete')
 
         if val == 'q':                  # Quit
-            print ("Disabling Direct Run")
-            plt.close()
+            print ("Disabling Direct Run. Close to end")
+            plt.show()
             break
-    plt.show()
 
 if __name__ == '__main__':
 

@@ -1,3 +1,9 @@
+################################################################################
+# Description: runs reverse_run. Scans the entire scene, stitches the images
+# together, identifies the fires, and exports a clean image of the scene, an
+# image of the scene marked with fire, and a json fire containing coordinates
+# of the instances of fire to Azure Blob Storage.
+################################################################################
 from azure.storage.blob import BlockBlobService, PublicAccess
 
 from droneClass import Drone
@@ -13,10 +19,11 @@ from predictor import analyze
 # FireDrone api_key
 api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
 
+#################### AZURE STORAGE SPECIFIC VARIABLES ##########################
 # Azure blob storage info
 account_name = 'firedronestor'
 account_key = 'dEvAqLZ2iU3WbvjehqVb/6d44hhMf5RpJlTpXXEdEeaR6bQtIeOJ6QWxmPjosJhsXdYLw22x/HeHfZi0v1H3Aw=='
-
+################################################################################
 
 def horiz_scan(droneInstance, direction, height):
     img = droneInstance.getFrame()
