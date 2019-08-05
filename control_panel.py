@@ -27,7 +27,7 @@ account_key = 'dEvAqLZ2iU3WbvjehqVb/6d44hhMf5RpJlTpXXEdEeaR6bQtIeOJ6QWxmPjosJhsX
 ################################################################################
 
 
-continuous_run_time_interval = 300                       # how often to run a reverse_run
+continuous_run_time_interval = 300                       # time interval between consecutive reverse_runs
 
 def continuous_reverse_run():
     run = Drone(api_key)
