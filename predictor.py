@@ -1,3 +1,8 @@
+################################################################################
+# Descrption: Defines analyze class which contains functions associated with
+# the Azure Cognitive Services functionality
+################################################################################
+
 from azure.cognitiveservices.vision.customvision.prediction import CustomVisionPredictionClient
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -16,7 +21,7 @@ fire_classifier = 'fire'            # Name of classifier in Custom Vision
 smoke_classifier = 'smoke'          # Name of classifier in Custom Vision
 
 # CALIBRATE FOR USE
-fireThreshold = 0.01
+fireThreshold = 0.15
 smokeThreshold = 0.15
 ################################################################################
 

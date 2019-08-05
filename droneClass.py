@@ -6,12 +6,16 @@
 #     startRun(scene_number)                        scene_number can be inputted in code, otherwise it is prompted for
 #     endRun(run_id = self.run_id)                  ends run
 #     check_run()                                   check if a valid run_id exists
+#     check_scenes(scene_id)                        checks if scene_id input is valid
 #
 #     getFrame()                                    returns current drone fov
 #     moveUp()                                      moves up 100 pixels
 #     moveDown()                                    down 100 pix
 #     moveLeft()                                    left 100 pix
 #     moveRight()                                   right 100 pix
+#
+#     get_all_history()                             directrun_history()
+#     get_history_entry(id)                         directrun_get_history_entry(id)
 
 import firedrone.client as fdc
 from firedrone.client.errors import FireDroneClientHttpError

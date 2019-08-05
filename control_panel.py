@@ -1,3 +1,11 @@
+################################################################################
+# Descrption: Imagined 'control panel code.' Allows user to select between
+# continuously scanning a selected scene and exporting data to Azure Blob
+# Storage (monitoring the scene), running a normal direct run, or starting a
+# direct run centered on a previous detected fire using data stored in Azure
+# Blob Storage.
+################################################################################
+
 from azure.storage.blob import BlockBlobService
 
 import reverse_run
@@ -9,14 +17,17 @@ import time
 import os
 import json
 
+################################################################################
 # FireDrone API key
 api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
 
 # Azure blob storage info
 account_name = 'firedronestor'
 account_key = 'dEvAqLZ2iU3WbvjehqVb/6d44hhMf5RpJlTpXXEdEeaR6bQtIeOJ6QWxmPjosJhsXdYLw22x/HeHfZi0v1H3Aw=='
+################################################################################
 
-continuous_run_time_interval = 60                       # how often to run a reverse_run
+
+continuous_run_time_interval = 300                       # how often to run a reverse_run
 
 def continuous_reverse_run():
     run = Drone(api_key)
