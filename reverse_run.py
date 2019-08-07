@@ -21,8 +21,8 @@ api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
 
 #################### AZURE STORAGE SPECIFIC VARIABLES ##########################
 # Azure blob storage info
-account_name = 'firedronestor'
-account_key = 'dEvAqLZ2iU3WbvjehqVb/6d44hhMf5RpJlTpXXEdEeaR6bQtIeOJ6QWxmPjosJhsXdYLw22x/HeHfZi0v1H3Aw=='
+account_name = 'firedrone'
+account_key = 'Y1UienmhrqHt/zCJd/qahDsJYqBlvmdZCQVTGRW+2WP4qy3PkHzriWBCKUcl0QG7Nl32lrRVJyAjiyGCJry/jQ=='
 ################################################################################
 
 def horiz_scan(droneInstance, direction, height):
@@ -122,7 +122,7 @@ def output_to_cloud(image, coords, scene_num):
             'y': y
         })
 
-    with open('coordinates.json', 'w') as f:
+    with open('./resources/coordinates.json', 'w') as f:
         json.dump(data, f)
 
     service = BlockBlobService(account_name, account_key)
