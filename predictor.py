@@ -138,7 +138,6 @@ class analyze:
         img = np.array(Image.open(self.image_path), dtype = np.uint8)
 
         self.__boxObject(self.fires, droneInstance, ax, im_width, im_height)
-        self.__boxObject(self.smoke, droneInstance, ax, im_width, im_height)
 
         ax.imshow(img)
         plt.pause(1)
