@@ -17,6 +17,7 @@ Microsoft Azure Custom Vision Services
 - PIL
 - Numpy
 - Readchar
+- Keyboard
 
 ## Description
 ###### __direct_run.py__
