@@ -118,7 +118,7 @@ def directRun(droneInstance, init_x = 0, init_y = 0):
 
         if val == 'e':                  # Pass to vision
             analyzer = analyze('./resources/frame.png')
-            patch = analyzer.dispPredict(droneInstance, ax)
+            analyzer.dispPredict(droneInstance, ax)
             print('Analysis complete')
 
         if val == 'q':                  # Quit
