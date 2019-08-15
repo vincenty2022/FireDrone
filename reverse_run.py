@@ -21,8 +21,8 @@ api_key = 'cyg-yPk*NBPKa!?%F73$$&8a6y7viE*d8_j$uYL2qnsgEndnWWz^q*zh!FO-d!jJ'
 
 #################### AZURE STORAGE SPECIFIC VARIABLES ##########################
 # Azure blob storage info
-account_name = 'firedrone'
-account_key = 'Y1UienmhrqHt/zCJd/qahDsJYqBlvmdZCQVTGRW+2WP4qy3PkHzriWBCKUcl0QG7Nl32lrRVJyAjiyGCJry/jQ=='
+account_name = 'account_name'
+account_key = 'account_key'
 ################################################################################
 
 def horiz_scan(droneInstance, direction, height):
